@@ -1,0 +1,55 @@
+name: TennisBallTracker
+options:
+  minimumXcodeGenVersion: 2.38.0
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: 5.10
+
+targets:
+  TennisBallTracker:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.harou.tennisballtracker
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: TennisBallTracker
+        INFOPLIST_KEY_NSCameraUsageDescription: Camera is used to track tennis ball bounces and line calls.
+        INFOPLIST_KEY_NSUserNotificationUsageDescription: Notifications are used to alert when a shot is called out.
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    scheme:
+      testTargets:
+        - TennisBallTrackerTests
+
+  TennisBallTrackerTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Tests
+    dependencies:
+      - target: TennisBallTracker
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  TennisBallTracker:
+    build:
+      targets:
+        TennisBallTracker: all
+        TennisBallTrackerTests: [test]
+    test:
+      gatherCoverageData: true
+      targets:
+        - name: TennisBallTrackerTests
+

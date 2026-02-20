@@ -1,0 +1,28 @@
+name: iOS CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
+
+      - name: Build and Test
+        run: |
+          xcodebuild \
+            -project TennisBallTracker.xcodeproj \
+            -scheme TennisBallTracker \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -derivedDataPath DerivedData \
+            clean test
+

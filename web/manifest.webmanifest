@@ -1,0 +1,18 @@
+{
+  "name": "Tennis Ball Tracker",
+  "short_name": "BallTracker",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#081428",
+  "theme_color": "#112240",
+  "description": "Real-time tennis ball in/out assistant with replay.",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
+

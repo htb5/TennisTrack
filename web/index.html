@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#112240">
+  <title>Tennis Ball Tracker</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <h1>Tennis Ball Tracker</h1>
+      <p class="subtitle">No-Mac iPhone PWA MVP</p>
+    </header>
+
+    <section class="camera-panel">
+      <video id="camera" playsinline muted></video>
+      <canvas id="overlay"></canvas>
+      <div id="statusChip" class="chip searching">Searching</div>
+    </section>
+
+    <section class="controls">
+      <button id="startBtn" class="primary">Start Camera</button>
+      <button id="replayBtn" class="ghost">Replay Last Shot</button>
+    </section>
+
+    <section class="notes">
+      <p>Fix your iPhone on a tripod for stable results. This is an assistive MVP, not certified Hawk-Eye accuracy.</p>
+    </section>
+  </main>
+
+  <dialog id="replayModal">
+    <div class="replay-head">
+      <strong>Replay</strong>
+      <button id="closeReplayBtn" class="ghost">Close</button>
+    </div>
+    <canvas id="replayCanvas"></canvas>
+  </dialog>
+
+  <script src="./app.js" type="module"></script>
+</body>
+</html>
+

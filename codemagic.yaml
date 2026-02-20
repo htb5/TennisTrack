@@ -1,0 +1,67 @@
+workflows:
+  ios_simulator_ci:
+    name: iOS Simulator CI (Unsigned)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+      vars:
+        XCODE_PROJECT: "TennisBallTracker.xcodeproj"
+        XCODE_SCHEME: "TennisBallTracker"
+    scripts:
+      - name: Install XcodeGen
+        script: brew install xcodegen
+      - name: Generate Xcode Project
+        script: xcodegen generate
+      - name: Build Unsigned App
+        script: |
+          xcodebuild build \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - /tmp/xcodebuild_logs/*.log
+
+  ios_no_mac_testflight:
+    name: iOS No-Mac TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      # Replace with your API key name in Codemagic Team integrations > Developer Portal.
+      app_store_connect: CM_APPLE_KEY_NAME
+    environment:
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.harou.tennisballtracker
+      vars:
+        XCODE_PROJECT: "TennisBallTracker.xcodeproj"
+        XCODE_SCHEME: "TennisBallTracker"
+        # Replace with your App Store Connect Apple ID for this app record.
+        APP_STORE_APPLE_ID: "0000000000"
+    scripts:
+      - name: Install XcodeGen
+        script: brew install xcodegen
+      - name: Generate Xcode Project
+        script: xcodegen generate
+      - name: Apply Provisioning Profiles
+        script: |
+          xcode-project use-profiles \
+            --custom-export-options='{"testFlightInternalTestingOnly": true}'
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
