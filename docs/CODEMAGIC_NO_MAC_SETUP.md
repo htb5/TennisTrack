@@ -34,8 +34,9 @@ In workflow `ios_no_mac_testflight`:
 ## 5. Run workflow
 
 1. Push to GitHub.
-2. In Codemagic, run `ios_no_mac_testflight`.
-3. Workflow outputs:
+2. In Codemagic, add app using repository configuration (`codemagic.yaml`).
+3. Run `ios_no_mac_testflight`.
+4. Workflow outputs:
    - Signed IPA artifact
    - TestFlight upload
 

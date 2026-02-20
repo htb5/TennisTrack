@@ -64,6 +64,7 @@ This follows your exact workflow:
 4. In `codemagic.yaml`:
    - Replace `APP_STORE_APPLE_ID: "0000000000"` with your app's real Apple ID.
 5. In Codemagic UI:
+   - When adding the app, select configuration from `codemagic.yaml`.
    - Start workflow `ios_no_mac_testflight`.
 
 ### What this workflow does
@@ -72,6 +73,11 @@ This follows your exact workflow:
 - Applies provisioning profiles automatically via Codemagic integration.
 - Builds signed `.ipa`.
 - Uploads to TestFlight (`submit_to_testflight: true`).
+
+### Scanner compatibility note
+
+- The repository includes an `ios/` project structure so Codemagic app scanning detects it as a mobile repository.
+- Publishing still uses the root `codemagic.yaml` workflows.
 
 ## Notes on iPhone behavior
 
