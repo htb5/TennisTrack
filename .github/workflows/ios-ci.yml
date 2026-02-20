@@ -17,12 +17,34 @@ jobs:
       - name: Generate Xcode Project
         run: xcodegen generate
 
+      - name: Resolve Simulator Destination
+        id: sim
+        run: |
+          SIM_ID=$(python3 - <<'PY'
+          import json, subprocess, sys
+          raw = subprocess.check_output(["xcrun", "simctl", "list", "devices", "available", "-j"], text=True)
+          data = json.loads(raw)
+          candidates = []
+          for runtime_devices in data.get("devices", {}).values():
+            for d in runtime_devices:
+              if d.get("isAvailable") and d.get("name", "").startswith("iPhone"):
+                candidates.append(d)
+          if not candidates:
+            sys.exit("No available iPhone simulators found")
+          print(candidates[0]["udid"])
+          PY
+          )
+          echo "sim_id=$SIM_ID" >> "$GITHUB_OUTPUT"
+          echo "Using simulator: $SIM_ID"
+
       - name: Build and Test
         run: |
           xcodebuild \
             -project TennisBallTracker.xcodeproj \
             -scheme TennisBallTracker \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination "id=${{ steps.sim.outputs.sim_id }}" \
             -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             clean test
-
