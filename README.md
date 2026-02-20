@@ -36,43 +36,38 @@ This is an assistive MVP baseline, not certified Hawk-Eye accuracy.
 5. Use `Share -> Add to Home Screen` to install like an app.
 6. Open installed app and tap `Start Camera`.
 
-## Option B: No-local-Mac native iOS build with Codemagic
+## Option B: No-local-Mac iOS build artifacts with Codemagic (no ASC)
 
 This follows your exact workflow:
 - Code on Windows and push to GitHub.
 - Codemagic uses a cloud Mac runner to build iOS.
-- Codemagic signs and publishes using App Store Connect API key integration.
+- No App Store Connect integration is required.
 
 ### Prerequisites
 
-- Apple Developer Program membership (required for App Store Connect/API key/TestFlight).
 - A GitHub repository for this project.
 - Codemagic account linked to GitHub.
 
 ### Setup steps
 
-1. In App Store Connect (browser):
-   - Open `Users and Access -> Integrations -> App Store Connect API`.
-   - Create API key and download the `.p8` key once.
-2. In Codemagic:
-   - Go to `Team settings -> Integrations -> Developer Portal`.
-   - Add App Store Connect integration (Issuer ID, Key ID, `.p8` file).
-   - Name it exactly as used in `codemagic.yaml`:
-     - `CM_APPLE_KEY_NAME`
-3. In App Store Connect:
-   - Create app record and copy its numeric Apple ID.
-4. In `codemagic.yaml`:
-   - Replace `APP_STORE_APPLE_ID: "0000000000"` with your app's real Apple ID.
-5. In Codemagic UI:
+1. In Codemagic UI:
    - When adding the app, select configuration from `codemagic.yaml`.
-   - Start workflow `ios_no_mac_testflight`.
+   - Start workflow `ios_sideload_ipa` for iPhone sideloading.
+   - Start workflow `ios_simulator_ci` for simulator-only CI validation.
 
-### What this workflow does
+### What the workflows do
 
-- Installs XcodeGen and generates `TennisBallTracker.xcodeproj`.
-- Applies provisioning profiles automatically via Codemagic integration.
-- Builds signed `.ipa`.
-- Uploads to TestFlight (`submit_to_testflight: true`).
+- `ios_sideload_ipa`:
+  - Installs XcodeGen and generates `TennisBallTracker.xcodeproj`.
+  - Builds an unsigned `Release-iphoneos` app.
+  - Packages `TennisBallTracker-unsigned.ipa` as an artifact.
+- `ios_simulator_ci`:
+  - Builds an unsigned iOS Simulator `.app` artifact for CI checks.
+
+### Important limitation
+
+- The sideload IPA is unsigned; deploy it with a sideload tool (for example AltStore or Sideloadly), which signs at install time with your Apple ID.
+- Simulator artifacts cannot be installed directly on a physical iPhone.
 
 ### Scanner compatibility note
 
@@ -88,8 +83,8 @@ This follows your exact workflow:
 ## Important limits
 
 - PWA path is fully free and does not need Apple Developer membership.
-- Native iOS/TestFlight/App Store path needs Apple Developer membership; it is not free forever.
-- If you only need personal use without membership, use Option A (PWA).
+- No-ASC Codemagic path can produce unsigned sideload IPA artifacts, not a TestFlight/App Store release.
+- If you only need browser install, use Option A (PWA).
 
 ## Next improvements
 

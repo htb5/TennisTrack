@@ -1,6 +1,6 @@
 workflows:
   ios_simulator_ci:
-    name: iOS Simulator CI (Unsigned)
+    name: iOS Personal Build (No App Store Connect)
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
@@ -8,6 +8,7 @@ workflows:
       vars:
         XCODE_PROJECT: "TennisBallTracker.xcodeproj"
         XCODE_SCHEME: "TennisBallTracker"
+        DERIVED_DATA_PATH: "$CM_BUILD_DIR/build"
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
@@ -21,53 +22,56 @@ workflows:
             -sdk iphonesimulator \
             -destination "generic/platform=iOS Simulator" \
             -configuration Debug \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
     artifacts:
+      - $CM_BUILD_DIR/build/Build/Products/Debug-iphonesimulator/*.app
       - /tmp/xcodebuild_logs/*.log
 
-  ios_no_mac_testflight:
-    name: iOS No-Mac TestFlight
+  ios_sideload_ipa:
+    name: iOS Sideload IPA (No App Store Connect)
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      # Replace with your API key name in Codemagic Team integrations > Developer Portal.
-      app_store_connect: CM_APPLE_KEY_NAME
     environment:
       xcode: latest
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.harou.tennisballtracker
       vars:
         XCODE_PROJECT: "TennisBallTracker.xcodeproj"
         XCODE_SCHEME: "TennisBallTracker"
-        # Replace with your App Store Connect Apple ID for this app record.
-        APP_STORE_APPLE_ID: "0000000000"
+        DERIVED_DATA_PATH: "$CM_BUILD_DIR/build"
+        IPA_NAME: "TennisBallTracker-unsigned.ipa"
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
       - name: Generate Xcode Project
         script: xcodegen generate
-      - name: Validate required publishing vars
+      - name: Build Unsigned Device App
         script: |
-          if [ "$APP_STORE_APPLE_ID" = "0000000000" ] || [ -z "$APP_STORE_APPLE_ID" ]; then
-            echo "APP_STORE_APPLE_ID is not configured. Set your real numeric App Store Apple ID in codemagic.yaml or Codemagic variables."
+          xcodebuild build \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -configuration Release \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Package Unsigned IPA Artifact
+        script: |
+          APP_PATH="$DERIVED_DATA_PATH/Build/Products/Release-iphoneos/TennisBallTracker.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Expected app bundle not found at: $APP_PATH"
             exit 1
           fi
-      - name: Apply Provisioning Profiles
-        script: |
-          xcode-project use-profiles \
-            --custom-export-options='{"testFlightInternalTestingOnly": true}'
-      - name: Build IPA
-        script: |
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+          PAYLOAD_DIR="$CM_BUILD_DIR/Payload"
+          rm -rf "$PAYLOAD_DIR"
+          mkdir -p "$PAYLOAD_DIR"
+          cp -R "$APP_PATH" "$PAYLOAD_DIR/"
+          cd "$CM_BUILD_DIR"
+          zip -r "$IPA_NAME" Payload
+          rm -rf Payload
     artifacts:
-      - build/ios/ipa/*.ipa
+      - $CM_BUILD_DIR/*.ipa
       - /tmp/xcodebuild_logs/*.log
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
