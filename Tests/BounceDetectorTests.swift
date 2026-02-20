@@ -16,7 +16,6 @@ final class BounceDetectorTests: XCTestCase {
         let bounce = detector.consume(point: CGPoint(x: 0.5, y: 0.24), time: 0.10)
 
         XCTAssertNotNil(bounce)
-        XCTAssertEqual(bounce?.point.y, 0.34, accuracy: 0.0001)
+        XCTAssertEqual(bounce?.point.y ?? -1, CGFloat(0.34), accuracy: 0.0001)
     }
 }
-
