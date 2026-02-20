@@ -1,6 +1,7 @@
 name: TennisBallTracker
 options:
   minimumXcodeGenVersion: 2.38.0
+  xcodeVersion: "15.4"
 configs:
   Debug: debug
   Release: release
@@ -52,4 +53,3 @@ schemes:
       gatherCoverageData: true
       targets:
         - name: TennisBallTrackerTests
-
